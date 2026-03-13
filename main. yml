@@ -1,47 +1,35 @@
-name: Billions Network Agent Verification
+name: Verify Human Identity
+
 on:
-  workflow_dispatch:
-    inputs:
-      agent_name:
-        description: 'Nama Agent'
-        required: true
-        default: 'ASEP9929'
-      agent_description:
-        description: 'Deskripsi Agent'
-        required: true
-        default: 'ASEP9929 AI Agent'
+  workflow_dispatch:
 
 jobs:
-  verify-identity:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      CI: true 
+  verify:
+    runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
 
-      - name: Install Dependencies
-        run: |
-          cd scripts
-          npm install
-      - name: Execute Verification
-        env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          AGENT_NAME: ${{ github.event.inputs.agent_name }}
-          AGENT_DESC: ${{ github.event.inputs.agent_description }}
-        run: |
-          cd scripts
-          
-          echo "Step 1: Creating Identity..."
-          yes | node createNewEthereumIdentity.js || echo "Identity already exists"
-          CHALLENGE=$(jq -n --arg name "$AGENT_NAME" --arg desc "$AGENT_DESC" '{name: $name, description: $desc}')
-          echo "Challenge Data: $CHALLENGE"
-          echo "Step 2: Linking Agent..."
-          printf "$AGENT_NAME\n$AGENT_DESC\n" | node manualLinkHumanToAgent.js --challenge "ASEP9929"
+      - name: Install ClawHub
+        run: npm install -g clawhub
+
+      - name: Install Verified Agent Identity
+        run: clawhub install verified-agent-identity
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          npm install
+
+      - name: Create Ethereum Identity
+        run: node scripts/createNewEthereumIdentity.js
+
+      - name: Link Human to Agent
+        run: |
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"ASEP9929","description":"ASEP9929 AI Agent"}'
