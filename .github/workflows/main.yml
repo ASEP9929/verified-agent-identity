@@ -1,0 +1,41 @@
+nama: Verifikasi Identitas Manusia
+
+pada:
+  pengiriman_alur_kerja:
+    masukan:
+      nama_agen:
+        deskripsi: 'ASEP9929'
+        diperlukan: benar
+        default: 'ASEP9929'
+      deskripsi_agen:
+        deskripsi: 'ASEP9929'
+        diperlukan: benar
+        default: 'Agen AI ASEP9929'
+
+Pekerjaan:
+  memeriksa:
+    berjalan di: ubuntu-latest
+
+    tangga:
+      - nama: Checkout repo
+        penggunaan: actions/checkout@v3
+
+      - nama: Pengaturan Node.js
+        penggunaan: actions/setup-node@v3
+        dengan:
+          versi node: '20'
+
+      - nama: Langkah 1 - Instal keterampilan ClawHub
+        jalankan: npx clawhub@latest install verified-agent-identity
+
+      - nama: Instal dependensi skrip
+        jalankan: |
+          skrip CD
+          instal npm
+
+      - nama: Langkah 2 - Buat Identitas Ethereum baru
+        jalankan: node scripts/createNewEthereumIdentity.js
+
+      - nama: Langkah 3 - Menghubungkan Manusia dengan Agen
+        jalankan: |
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name": "ASEP9929", "description": "Agen AI ASEP9929"}'
